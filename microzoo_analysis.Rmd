@@ -1,5 +1,5 @@
 ---
-title: "Microzoo_analysis"
+title: "microzoo_analysis"
 author: "Sarah Glancy"
 date: "3/19/2021"
 output: html_document
@@ -16,6 +16,20 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 #Overview of steps to this projects data compiling and analysis. 
-#1- add data to github- this includes the fish grothe data, microzoo counts, ambient environment data and larval gut data( not generated as of 2021-03-19)
+#1- add data to github- this includes the fish growth data, microzoo counts, ambient environment data and larval gut data (gut data not generated as of 2021-05-06)
 
+```{r}
+
+library(readxl)
+
+bin_counts <- read_excel("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/binCounts_20210506.xlsx")
+View(bin_counts)
+
+library(readr)
+
+Otolith_Growth_Rate_4DO <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_4DO.csv")
+
+Otolith_Growth_Rate_all <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_all.csv")
+
+```
 
