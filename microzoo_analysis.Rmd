@@ -53,4 +53,44 @@ gs4_get(Fish_collection_date_relate)
 
 ```
 
+##before joining tables, change date to day of year, prepresented in #lubridate function as %j. Is 1 = Jan 1st etc. 
 
+##try to change to year-month-day with simple function, will it work with 6 digit date?
+```{r}
+library(lubridate)
+ymd(150520)
+```
+
+##Yes!!
+
+## now need to change all dates in 4 pages to this format. 
+## alternative, can I go from 6 digit date directly to year-day?
+     
+
+#Use libridate function yday() 
+
+```{r}
+  yday(Fish_collection_date_relate$Date)
+```
+  ##does not seem to work directly.
+  
+```{r}
+
+ymd(Fish_collection_date_relate$Date)
+```
+  # that worked (but i hid it becasue it was huge), now use mutate() to add a column with this new date information to the end of the df. 
+  
+```{r}
+Fish_collection_ymd_date <- mutate(Fish_collection_date_relate, 
+       ymd_date = ymd(Fish_collection_date_relate$Date))
+```
+  ##yay, worked again, now change to year-day
+  
+```{r}
+
+transmute(Fish_collection_ymd_date, 
+          year_day = yday(ymd_date))
+```
+  Yay again!
+  
+  
