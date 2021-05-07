@@ -33,3 +33,24 @@ Otolith_Growth_Rate_all <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankto
 
 ```
 
+## load in older files supplied by Justin (will not be chnaged) from google drive. 
+
+#DC lesson on sheet management/organization
+#https://datacarpentry.org/spreadsheet-ecology-lesson/
+
+```{r}
+library(tidyverse)
+library(googlesheets4)
+library(googledrive)
+
+# Google Sheet is the input
+myurl <- "https://docs.google.com/spreadsheets/d/1EJuErt2DDZDtzXWHWAbuwS9ptBaA1lkPDLeeiBQg-KU/edit?usp=sharing" # url for googlesheet
+gs4_auth() # manual authorization thru web browser
+Fish_collection_date_relate <- read_sheet(myurl) # manual authorization thru web browser
+
+
+gs4_get(Fish_collection_date_relate)
+
+```
+
+
