@@ -1,0 +1,70 @@
+---
+title: "CalculatingFishAgeSamplingPoints"
+author: "Sarah Glancy"
+date: "5/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+
+library(tidyverse)
+library(googlesheets4)
+library(googledrive)
+
+# Google Sheet is the input
+myurl <- "https://docs.google.com/spreadsheets/d/1EJuErt2DDZDtzXWHWAbuwS9ptBaA1lkPDLeeiBQg-KU/edit?usp=sharing" # url for googlesheet
+gs4_auth() # manual authorization thru web browser
+Fish_collection_date_relate <- read_sheet(myurl) # manual authorization thru web browser
+
+
+gs4_get(Fish_collection_date_relate)
+
+Otolith_Growth_Rate_All <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/Otolith_Growth_Rate_all.csv")
+
+View(Otolith_Growth_Rate_All)
+
+#in below file there were some bin numbers with spaces after them which is I think why they were nto joining properly in the Microzoo analysis rmd. I fixed it manually in notepad and saved the CSV. will also need to check the summary sent from EP before joining. 
+
+Date_bin_relational <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/Date_bin_relational.csv")
+
+view(Date_bin_relational)
+
+## the below is the same sheet as the one I'm importing from drive. the drive one works better on import. 
+
+
+#Oto_Num_date <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/OtolithNum_date_relational_JS.csv")
+
+#view(Oto_Num_date)
+
+#Oto_Num_date <- drop_na(Oto_Num_date)
+```
+
+
+## rename columns to match, and change date to year-day. 
+
+```{r}
+
+library(lubridate)
+
+Fish_half <- Fish_collection_date_relate %>% 
+  mutate ( year_day = yday(ymd(Date))) %>%
+  rename ( Fish_Num = "Oto_Num")
+```
+
+
+#done. 
+
+
+
+
+

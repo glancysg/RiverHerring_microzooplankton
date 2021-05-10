@@ -29,7 +29,7 @@ library(readr)
 
 Otolith_Growth_Rate_4DO <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_4DO.csv")
 
-Otolith_Growth_Rate_all <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_all.csv")
+Otolith_Growth_Rate_All <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_all.csv")
 
 ```
 
@@ -126,4 +126,14 @@ Dated_bin_EP <- full_join(Date_bin_relational, bin_counts, by = "bin")
 
 ```
 
-##the join did not appear to work, some of them that shoud match are not . 
+##the join did not appear to work, some of them that shoud match are not. 
+
+try using other join types. want to keep all info from the bin_counts file, so try Ljoin with that one listed first? what is difference between l and r join if the order of dfs can be switched?
+
+
+```{r}
+LJ_bincounts_Dates <- left_join(bin_counts, Date_bin_relational, by = "bin")
+```
+
+
+
