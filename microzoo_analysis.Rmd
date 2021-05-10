@@ -88,9 +88,27 @@ Fish_collection_ymd_date <- mutate(Fish_collection_date_relate,
   
 ```{r}
 
-transmute(Fish_collection_ymd_date, 
+ transmute(Fish_collection_ymd_date, 
           year_day = yday(ymd_date))
 ```
   Yay again!
   
+  ## Question: do joins though tidyverse require the joining column to have the same column name? I guess yes, should I just change the column name to match before attempting?
   
+```{r}
+Fish_collection_3.0 <- Fish_collection_ymd_date %>%
+  rename( Fish_Num = Oto_Num) %>% 
+  mutate( year_day = yday(Fish_collection_ymd_date$ymd_date))
+  
+
+```
+  
+## That worked!!
+## need to figure out how to save a change to my df without renaming (ie creating ## a bunch of dfs) it every time? 
+
+-----------------------------------------------
+
+##Attempting a join now that the col namesa re the same. full join. 
+
+
+
