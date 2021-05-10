@@ -110,5 +110,20 @@ Fish_collection_3.0 <- Fish_collection_ymd_date %>%
 
 ##Attempting a join now that the col namesa re the same. full join. 
 
+```{r}
+Fish_Otolith_Join <- full_join(Fish_collection_3.0, Otolith_Growth_Rate_all, by = "Fish_Num")
 
+```
 
+##Okay next step is to get dates with the current bin counts from EP. 
+
+```{r}
+Date_bin_relational <- read_excel("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Date_bin_relational.xlsx")
+
+Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID)
+
+Dated_bin_EP <- full_join(Date_bin_relational, bin_counts, by = "bin")
+
+```
+
+##the join did not appear to work, some of them that shoud match are not . 
