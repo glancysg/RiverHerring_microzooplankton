@@ -35,6 +35,8 @@ View(Otolith_Growth_Rate_All)
 
 #in below file there were some bin numbers with spaces after them which is I think why they were nto joining properly in the Microzoo analysis rmd. I fixed it manually in notepad and saved the CSV. will also need to check the summary sent from EP before joining. 
 
+## checked the summeray from EP, no spaces, Join should work better now. 
+
 Date_bin_relational <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/Date_bin_relational.csv")
 
 view(Date_bin_relational)
@@ -64,7 +66,44 @@ Fish_half <- Fish_collection_date_relate %>%
 
 #done. 
 
+##need to create column that has format POND_yearday. use function "unite()"
+ example df %>% unite("z", x:y, remove = FALSE)
+
+```{r}
+Fish_half <- Fish_half %>%
+  unite("Lake_ID", Location, year_day, remove = FALSE)
 
 
+```
+
+great now I have an identifier for the lake and dya that can be related to the bin,after removing the  replicate number. 
+
+
+##need to join the Fish_half with the Otolith growth rate all sheets. join full based on fish num. 
+
+
+```{r}
+Fish_half <- full_join(Fish_half, Otolith_Growth_Rate_All, by = "Fish_Num")
+
+
+
+```
+
+there aer some fish in one, but not in the other, I want to drop all that don't have complete data. will call this noNA??
+
+
+```{r}
+Fish_half_noNA <- drop_na(Fish_half)
+
+view(Fish_half_noNA)
+
+```
+
+The fish data is all gathered and in a format ready to join. 
+
+###Completely Done???
+
+
+########################################################################
 
 
