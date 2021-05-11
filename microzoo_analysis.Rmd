@@ -70,7 +70,7 @@ ymd(150520)
 #Use libridate function yday() 
 
 ```{r}
-  yday(Fish_collection_date_relate$Date)
+ # yday(Fish_collection_date_relate$Date)
 ```
   ##does not seem to work directly.
   
@@ -81,24 +81,24 @@ ymd(Fish_collection_date_relate$Date)
   # that worked (but i hid it becasue it was huge), now use mutate() to add a column with this new date information to the end of the df. 
   
 ```{r}
-Fish_collection_ymd_date <- mutate(Fish_collection_date_relate, 
-       ymd_date = ymd(Fish_collection_date_relate$Date))
+#Fish_collection_ymd_date <- mutate(Fish_collection_date_relate, 
+#       ymd_date = ymd(Fish_collection_date_relate$Date))
 ```
   ##yay, worked again, now change to year-day
   
 ```{r}
 
- transmute(Fish_collection_ymd_date, 
-          year_day = yday(ymd_date))
+ #transmute(Fish_collection_ymd_date, 
+ #         year_day = yday(ymd_date))
 ```
   Yay again!
   
   ## Question: do joins though tidyverse require the joining column to have the same column name? I guess yes, should I just change the column name to match before attempting?
   
 ```{r}
-Fish_collection_3.0 <- Fish_collection_ymd_date %>%
-  rename( Fish_Num = Oto_Num) %>% 
-  mutate( year_day = yday(Fish_collection_ymd_date$ymd_date))
+#Fish_collection_3.0 <- Fish_collection_ymd_date %>%
+#  rename( Fish_Num = Oto_Num) %>% 
+#  mutate( year_day = yday(Fish_collection_ymd_date$ymd_date))
   
 
 ```
@@ -111,18 +111,18 @@ Fish_collection_3.0 <- Fish_collection_ymd_date %>%
 ##Attempting a join now that the col namesa re the same. full join. 
 
 ```{r}
-Fish_Otolith_Join <- full_join(Fish_collection_3.0, Otolith_Growth_Rate_all, by = "Fish_Num")
+#Fish_Otolith_Join <- full_join(Fish_collection_3.0, Otolith_Growth_Rate_all, by = "Fish_Num")
 
 ```
 
 ##Okay next step is to get dates with the current bin counts from EP. 
 
 ```{r}
-Date_bin_relational <- read_excel("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Date_bin_relational.xlsx")
+#Date_bin_relational <- read_excel("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Date_bin_relational.xlsx")
 
-Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID)
+#Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID)
 
-Dated_bin_EP <- full_join(Date_bin_relational, bin_counts, by = "bin")
+#Dated_bin_EP <- full_join(Date_bin_relational, bin_counts, by = "bin")
 
 ```
 
@@ -132,8 +132,89 @@ try using other join types. want to keep all info from the bin_counts file, so t
 
 
 ```{r}
-LJ_bincounts_Dates <- left_join(bin_counts, Date_bin_relational, by = "bin")
+#LJ_bincounts_Dates <- left_join(bin_counts, Date_bin_relational, by = "bin")
 ```
+
+~~~~~~~~~~~~~~~~~~
+above blocked out because it was using a xlsx and i've since switched to .csv. 
+
+##Now working on the bins with microzoo counts to make them able to join, and also abole to join the fish data (will be LAKE_DATE (date in year_day))
+
+change date to year_day and create column with lake and date united to join with fish data.  
+
+
+```{r}
+
+Date_bin <- Date_bin_relational%>%
+  mutate ( year_day = yday(ymd(Date))) %>%
+  unite("Lake_ID", Lake, year_day, remove = FALSE)
+
+view(Date_bin)
+
+```
+
+
+## that all seems to have worked. 
+
+#The same LakeID should match to multiple fishes. There will be multiples in the Lake ID from the Date_bin df because 3 samples were run on each sample jar. they need to be summed.
+
+can I use group by to sum all the volume data about the bins?
+
+```{r}
+#Grouped_Vol <- Date_bin %>%
+#  group_by(Lake_ID) %>%
+#  summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs))
+
+
+#view(Grouped_Vol)
+```
+
+#SO this kind of worked, but I think I shoudl add in the counts and then use summarize with them as well to creatre a df, than join in the data with a left or right join to fill  in the missing data. 
+
+```{r}
+EP_Summary <- read.csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/summary_EP_05062021.csv")
+
+view(EP_Summary)
+
+```
+
+loaded in correctly. now full join with date bin, should be no NA rows!
+
+```{r}
+
+Date_bin <- Date_bin %>%
+  rename( bin = "IFCB_ID")
+
+EP_Summary <- EP_Summary %>%
+  rename( bin = "X")
+
+view(Date_bin)
+view(EP_Summary)
+
+Join_date_micro_counts <- full_join(EP_Summary, Date_bin, by = "bin")
+
+view(Join_date_micro_counts)
+
+```
+
+## Yes! that worked perfectly, with 108 rows. 
+
+## now run again the grouped summarise function. 
+
+```{r}
+Summed_Counts <- Join_date_micro_counts %>%
+  group_by(Lake_ID) %>%
+  summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Nauplii = sum(Nauplii), Karatella = sum(Karatella), Polyarthra = sum(Polyarthra), Asplanchna = sum(Asplanchna), Tricocera = sum(Tricocera), Mallomonas = sum(Mallomonas))
+view(Summed_Counts)
+
+
+```
+
+
+
+
+
+
 
 
 
