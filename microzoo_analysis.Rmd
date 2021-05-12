@@ -211,8 +211,21 @@ view(Summed_Counts)
 ```
 
 
+## had idea to used another column inaddition to Lake_ID which is the lake and year-day that the fish was sampled, and also include an identifier which is Lake_ID_age chich would be the year-day date minus the age in days of the fish.
 
+##then filter by the ages (right now named day, should rename) that have dates that match zoop sampling daye
 
+## point is to get fish of a certain age that have matching zoop data. 
+
+```{r}
+Fish_half_noNA <- Fish_half_noNA %>% 
+  rename( age_day = "Day") %>%
+  mutate( back_age_day = year_day - age_day) %>%
+  mutate( back_Lake_ID = unite(Lake, back_age_day))
+
+view(Fish_half_noNA)
+
+```
 
 
 
