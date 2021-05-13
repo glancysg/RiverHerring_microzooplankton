@@ -218,12 +218,73 @@ view(Summed_Counts)
 ## point is to get fish of a certain age that have matching zoop data. 
 
 ```{r}
+
 Fish_half_noNA <- Fish_half_noNA %>% 
-  rename( age_day = "Day") %>%
-  mutate( back_age_day = year_day - age_day) %>%
-  mutate( back_Lake_ID = unite(Lake, back_age_day))
+  rename( age_day = "Day")
+
+Fish_half_noNA <- Fish_half_noNA %>% 
+  mutate( back_age_day = year_day) %>% # day of the year that the fish was that day
+  unite("back_Lake_ID", Lake, back_age_day)
 
 view(Fish_half_noNA)
+
+# CMH- no new column, relate day age to microzoo dates. create loops 
+# for each fish- if there's one with age 4 that matches, use that one, 
+# if not, use fish age of 4 or 5 (maybe function near() )
+
+
+
+
+```
+
+
+#accidentally removed the columns united, but not fatal error.
+
+#use filter to make a list of fish that had a ring measured on days 3-6. 
+
+```{r}
+Small_fish_half <- Fish_half_noNA %>%
+  filter(between(age_day, 3, 7))
+
+view( Small_fish_half)
+```
+
+
+```{r}
+# aggregate and then merge 
+Fish_age <- aggregate(Day ~ Fish_Num, data = Otolith_Growth_Rate_All, FUN = max)
+
+head(Fish_age)
+
+Fish_age <- Fish_age %>%
+  rename( Collect_age = "Day")
+
+CMH_Fish_Dating <- merge(Fish_age, Otolith_Growth_Rate_All, all.y= TRUE)
+
+view(CMH_Fish_Dating)
+
+#CMH_Fish_Dating$Back_Lake_ID <- unite(CMH_Fish_Dating$Lake, )
+Fish_collection_date_relate <- Fish_collection_date_relate%>%
+  rename(Fish_Num = Oto_Num)
+
+CMH_Fish_Dating <- left_join(CMH_Fish_Dating, Fish_collection_date_relate, by = "Fish_Num")
+
+#CMH_Fish_Dating<- CMH_Fish_Dating%>%
+#  mutate ( back_year_day = yday(ymd(Date))) %>%
+#   unite("back_Lake_ID", Lake, year_day - Collect_age + Day, remove = FALSE)
+
+CMH_Fish_Dating<- CMH_Fish_Dating%>%
+  mutate ( back_year_day = year_day - Collect_age + Day) %>%
+  unite("back_Lake_ID", Lake, back_year_day, remove = FALSE)
+
+view(CMH_Fish_Dating)
+
+
+# restrict this object to be only rows with fish ages 3-5, and back year days that match zooplankton collectiON 
+# two steps. 
+# restrict first to have more manageable set. look up merge()
+
+#CMH_Fish_Dating[,c(“Date”,”Fish_Num”, “back_Lake_ID”)] then ass the other df with the columns desired from that one. 
 
 ```
 
