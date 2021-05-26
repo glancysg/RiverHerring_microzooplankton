@@ -1,0 +1,132 @@
+---
+title: "MicrozooAnalysis_V2"
+author: "Sarah Glancy"
+date: "5/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Load in all necessary packages. 
+
+```{r cars}
+library(readxl)
+library(readr)
+library(tidyverse)
+library(googlesheets4)
+library(googledrive)
+library(lubridate)
+
+
+```
+
+Read in all the files.
+
+```{r}
+####fish files
+
+# Google Sheet is the input, this file has the collection date and the fish number
+myurl <- "https://docs.google.com/spreadsheets/d/1EJuErt2DDZDtzXWHWAbuwS9ptBaA1lkPDLeeiBQg-KU/edit?usp=sharing" # url for googlesheet
+gs4_auth() # manual authorization thru web browser
+
+Fish_Num_date <- read_sheet(myurl) # manual authorization thru web browser
+
+#gs4_get(Fish_Num_date) # I am not sure if I need this line at all
+
+#this file has the fish number and all the other data needed for the analysis and the location
+Otolith_Num_Lake <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/Otolith_Growth_Rate_all.csv")
+
+View(Otolith_Num_Lake)
+
+####Microzooplankton files
+
+#this file has the bin and lake datea nd volume information
+Date_bin_relational <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/Date_bin_relational.csv")
+
+view(Date_bin_relational)
+
+#this file as the most recent counts from the bins (spring 2021)
+S2021_Summary <- read.csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/summary_EP_05062021.csv")
+
+view(S2021_Summary)
+
+```
+
+All four files need to be modified before being joined or related to each other. 
+
+First the two microzooplankton files, because they're simpler. 
+
+```{r}
+
+
+Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID) #rename the bin so that it matches the other file to join with
+
+Date_bin <- Date_bin_relational%>% # change the date into a format that we can do math on 
+  mutate ( year_day = yday(ymd(Date))) %>% # create an identifier that is unique to a lake  day (time and place)
+  unite("Lake_ID", Lake, year_day, remove = FALSE)
+
+
+S2021_Summary <- S2021_Summary %>%
+  rename( IFCB_ID = "X") #match column title from other sheet
+
+
+
+```
+
+Second preparing the fish information. 
+```{r}
+
+Fish_1 <- Fish_Num_date %>% #change column names to match other sheet and date to a format that we can do math with
+  mutate ( year_day = yday(ymd(Date))) %>%
+  rename ( Fish_Num = "Oto_Num")
+
+Fish_1 <- Fish_1 %>% #use new date to create a time space identifier
+  unite("Lake_ID", Location, year_day, remove = FALSE)
+
+Fish_1 <- drop_na(Fish_1) # get rid of all the empty rows. 
+Fish_2 <- drop_na(Fish_2)
+# there are going to be a few different day-type columns, renaming so that they all have meaningful names to keep track of
+Fish_2 <- Otolith_Num_Lake %>%
+  rename( age_day = "Day") #days of age
+
+#Fish_1 <- Fish_1 %>% 
+#  mutate( back_age_day = year_day) %>% # day of the year that the fish was that day
+#  unite("back_Lake_ID", Lake, back_age_day)
+
+Fish_age <- aggregate(Day ~ Fish_Num, data = Otolith_Num_Lake, FUN = max)
+
+head(Fish_age)
+
+Fish_age <- Fish_age %>%
+  rename( Collect_age = "Day")
+
+Fish_2 <- merge(Fish_age, Fish_2, all.y= TRUE)
+
+
+
+```
+
+next joining the fish files to one another, then joining the microzooplantkon files, then both. 
+
+```{r}
+##Microzooplankton parts
+Microzoo <- full_join(S2021_Summary, Date_bin, by = "IFCB_ID")
+
+#there were 3 replicates for each lake:date, so there are three bins that have the same data 
+Microzoo <- MIcrozoo %>%
+  group_by(Lake_ID) %>%
+  summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Nauplii = sum(Nauplii), Karatella = sum(Karatella), Polyarthra = sum(Polyarthra), Asplanchna = sum(Asplanchna), Tricocera = sum(Tricocera), Mallomonas = sum(Mallomonas))
+
+#results in 34 observations. 
+Fish <- full_join(Fish_1, Fish_2, by = "Fish_Num")
+
+Fish_1<- Fish_1%>% #this requires data from both fish files, do after join.
+  mutate ( back_year_day = year_day - Collect_age + Day) %>%
+  unite("back_Lake_ID", Lake, back_year_day, remove = FALSE)
+
+```
+

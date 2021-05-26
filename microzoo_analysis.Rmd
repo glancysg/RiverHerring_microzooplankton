@@ -27,7 +27,7 @@ View(bin_counts)
 
 library(readr)
 
-Otolith_Growth_Rate_4DO <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_4DO.csv")
+# Otolith_Growth_Rate_4DO <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_4DO.csv")
 
 Otolith_Growth_Rate_All <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Otolith_Growth_Rate_all.csv")
 
@@ -58,7 +58,7 @@ gs4_get(Fish_collection_date_relate)
 ##try to change to year-month-day with simple function, will it work with 6 digit date?
 ```{r}
 library(lubridate)
-ymd(150520)
+#ymd(150520)
 ```
 
 ##Yes!!
@@ -118,9 +118,9 @@ ymd(Fish_collection_date_relate$Date)
 ##Okay next step is to get dates with the current bin counts from EP. 
 
 ```{r}
-#Date_bin_relational <- read_excel("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Date_bin_relational.xlsx")
+Date_bin_relational <- read_excel("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/Date_bin_relational.xlsx")
 
-#Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID)
+Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID)
 
 #Dated_bin_EP <- full_join(Date_bin_relational, bin_counts, by = "bin")
 
@@ -161,12 +161,12 @@ view(Date_bin)
 can I use group by to sum all the volume data about the bins?
 
 ```{r}
-#Grouped_Vol <- Date_bin %>%
-#  group_by(Lake_ID) %>%
-#  summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs))
+Grouped_Date_bin <- Date_bin %>%
+  group_by(Lake_ID) %>%
+  summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs))
 
 
-#view(Grouped_Vol)
+view(Grouped_Date_bin)
 ```
 
 #SO this kind of worked, but I think I shoudl add in the counts and then use summarize with them as well to creatre a df, than join in the data with a left or right join to fill  in the missing data. 
@@ -182,8 +182,8 @@ loaded in correctly. now full join with date bin, should be no NA rows!
 
 ```{r}
 
-Date_bin <- Date_bin %>%
-  rename( bin = "IFCB_ID")
+#Date_bin <- Date_bin %>%
+#  rename( bin = "IFCB_ID")
 
 EP_Summary <- EP_Summary %>%
   rename( bin = "X")
@@ -191,9 +191,10 @@ EP_Summary <- EP_Summary %>%
 view(Date_bin)
 view(EP_Summary)
 
-Join_date_micro_counts <- full_join(EP_Summary, Date_bin, by = "bin")
+#Join_date_micro_counts <- full_join(EP_Summary, Date_bin, by = "bin")
+Microzoo <- full_join(EP_Summary, Date_bin, by = "bin")
 
-view(Join_date_micro_counts)
+#view(Join_date_micro_counts)
 
 ```
 
@@ -202,11 +203,15 @@ view(Join_date_micro_counts)
 ## now run again the grouped summarise function. 
 
 ```{r}
-Summed_Counts <- Join_date_micro_counts %>%
+#Summed_Counts <- Join_date_micro_counts %>%
+#  group_by(Lake_ID) %>%
+#  summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Nauplii = sum(Nauplii), Karatella = sum(Karatella), Polyarthra = sum(Polyarthra), Asplanchna = sum(Asplanchna), Tricocera = sum(Tricocera), Mallomonas = sum(Mallomonas))
+
+#view(Summed_Counts)
+
+Summed_Microzoo <- Microzoo %>%
   group_by(Lake_ID) %>%
   summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Nauplii = sum(Nauplii), Karatella = sum(Karatella), Polyarthra = sum(Polyarthra), Asplanchna = sum(Asplanchna), Tricocera = sum(Tricocera), Mallomonas = sum(Mallomonas))
-view(Summed_Counts)
-
 
 ```
 
@@ -227,10 +232,6 @@ Fish_half_noNA <- Fish_half_noNA %>%
   unite("back_Lake_ID", Lake, back_age_day)
 
 view(Fish_half_noNA)
-
-# CMH- no new column, relate day age to microzoo dates. create loops 
-# for each fish- if there's one with age 4 that matches, use that one, 
-# if not, use fish age of 4 or 5 (maybe function near() )
 
 
 
@@ -288,7 +289,9 @@ view(CMH_Fish_Dating)
 
 ```
 
+Create a list of column titles I want. 
 
+## Date, Fish_Num, back_Lake_ID, Collect_age, Lake, Day, Temperature, SL, year_day, back_year_day
 
 
 

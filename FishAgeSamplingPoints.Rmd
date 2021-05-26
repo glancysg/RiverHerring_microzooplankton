@@ -35,7 +35,7 @@ View(Otolith_Growth_Rate_All)
 
 #in below file there were some bin numbers with spaces after them which is I think why they were nto joining properly in the Microzoo analysis rmd. I fixed it manually in notepad and saved the CSV. will also need to check the summary sent from EP before joining. 
 
-## checked the summeray from EP, no spaces, Join should work better now. 
+## checked the summery from EP, no spaces, Join should work better now. 
 
 Date_bin_relational <- read_csv("C:/Users/Sarah/Desktop/WHOI/Microzooplankton/RiverHerring_microzooplankton/Date_bin_relational.csv")
 
