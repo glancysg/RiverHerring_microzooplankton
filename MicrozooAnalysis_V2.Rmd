@@ -35,6 +35,8 @@ gs4_auth() # manual authorization thru web browser
 
 Fish_Num_date <- read_sheet(myurl) # manual authorization thru web browser
 
+view(Fish_Num_date)
+
 #gs4_get(Fish_Num_date) # I am not sure if I need this line at all
 
 #this file has the fish number and all the other data needed for the analysis and the location
@@ -63,11 +65,11 @@ First the two microzooplankton files, because they're simpler.
 ```{r}
 
 
-Date_bin_relational <- rename(Date_bin_relational, bin = IFCB_ID) #rename the bin so that it matches the other file to join with
-
 Date_bin <- Date_bin_relational%>% # change the date into a format that we can do math on 
   mutate ( year_day = yday(ymd(Date))) %>% # create an identifier that is unique to a lake  day (time and place)
-  unite("Lake_ID", Lake, year_day, remove = FALSE)
+  unite("Lake_ID", Lake, year_day, remove = FALSE) %>%
+  rename( IFCB_ID = "bin") # renames bin to match the summary file that has the counts in it. 
+  
 
 
 S2021_Summary <- S2021_Summary %>%
@@ -82,21 +84,25 @@ Second preparing the fish information.
 
 Fish_1 <- Fish_Num_date %>% #change column names to match other sheet and date to a format that we can do math with
   mutate ( year_day = yday(ymd(Date))) %>%
-  rename ( Fish_Num = "Oto_Num")
+  rename ( Fish_Num = "Oto_Num") %>%
+  unite("Lake_ID", Location, year_day, remove = FALSE) #use new date to create a time space identifier
 
-Fish_1 <- Fish_1 %>% #use new date to create a time space identifier
-  unite("Lake_ID", Location, year_day, remove = FALSE)
 
-Fish_1 <- drop_na(Fish_1) # get rid of all the empty rows. 
-Fish_2 <- drop_na(Fish_2)
+####
+#remove extra columns
+Fish_1 <- Fish_1 %>%
+  select(-File_Name, -Measurement)
+
+
 # there are going to be a few different day-type columns, renaming so that they all have meaningful names to keep track of
 Fish_2 <- Otolith_Num_Lake %>%
   rename( age_day = "Day") #days of age
 
-#Fish_1 <- Fish_1 %>% 
-#  mutate( back_age_day = year_day) %>% # day of the year that the fish was that day
-#  unite("back_Lake_ID", Lake, back_age_day)
+#remove extra columns
+Fish_2 <- Fish_2 %>%
+  select(-ID, -Time, -Cohort)
 
+#create a temporary df to indicate the maximum age which is the age the day they were collected. 
 Fish_age <- aggregate(Day ~ Fish_Num, data = Otolith_Num_Lake, FUN = max)
 
 head(Fish_age)
@@ -106,8 +112,12 @@ Fish_age <- Fish_age %>%
 
 Fish_2 <- merge(Fish_age, Fish_2, all.y= TRUE)
 
+Fish_1 <- drop_na(Fish_1) # get rid of all the empty rows. 
+Fish_2 <- drop_na(Fish_2)
 
+  Fish_Trial <- full_join(Fish_2, distinct(Fish_1), by = "Fish_Num")
 
+  
 ```
 
 next joining the fish files to one another, then joining the microzooplantkon files, then both. 
@@ -117,15 +127,19 @@ next joining the fish files to one another, then joining the microzooplantkon fi
 Microzoo <- full_join(S2021_Summary, Date_bin, by = "IFCB_ID")
 
 #there were 3 replicates for each lake:date, so there are three bins that have the same data 
-Microzoo <- MIcrozoo %>%
+Microzoo <- Microzoo %>%
   group_by(Lake_ID) %>%
   summarise(Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Vol_Img_L = sum(Vol_Img_L), Num_ROIs = sum(Num_ROIs), Nauplii = sum(Nauplii), Karatella = sum(Karatella), Polyarthra = sum(Polyarthra), Asplanchna = sum(Asplanchna), Tricocera = sum(Tricocera), Mallomonas = sum(Mallomonas))
 
-#results in 34 observations. 
+# the above results in 34 observations. 
+
+
 Fish <- full_join(Fish_1, Fish_2, by = "Fish_Num")
 
-Fish_1<- Fish_1%>% #this requires data from both fish files, do after join.
-  mutate ( back_year_day = year_day - Collect_age + Day) %>%
+Fish <- drop_na(Fish)
+
+Fish<- Fish%>% #this requires data from both fish files, do after join.
+  mutate ( back_year_day = year_day - Collect_age + age_day) %>%
   unite("back_Lake_ID", Lake, back_year_day, remove = FALSE)
 
 ```
